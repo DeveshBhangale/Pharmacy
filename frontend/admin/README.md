@@ -5,20 +5,24 @@ A modern, responsive admin interface for the Pharmacy Management System (PMS) bu
 ## UI Screenshots
 
 ### Dashboard
-![Dashboard](/public/images/docs/dashboard.png)
+![Dashboard](./src/assets/images/docs/dashboard.png)
 The dashboard provides a comprehensive overview of the pharmacy's operations with key metrics, recent orders, and stock alerts.
 
 ### Orders Management
-![Orders](/public/images/docs/orders.png)
+![Orders](./src/assets/images/docs/orders.png)
 Track and manage orders with an intuitive interface showing order status, customer details, and delivery information.
 
 ### Medicine Inventory
-![Medicines](/public/images/docs/medicines.png)
+![Medicines](./src/assets/images/docs/medicines.png)
 Grid view of medicines with stock levels, pricing, and quick actions for inventory management.
 
 ### User Management
-![Users](/public/images/docs/users.png)
+![Users](./src/assets/images/docs/users.png)
 Manage users with detailed information about their orders, status, and account details.
+
+### Settings
+![Settings](./src/assets/images/docs/settings.png)
+Configure system settings including store information, notifications, security, and more.
 
 ## Features
 
