@@ -20,10 +20,6 @@ Grid view of medicines with stock levels, pricing, and quick actions for invento
 ![Users](./src/assets/images/docs/users.png)
 Manage users with detailed information about their orders, status, and account details.
 
-### Settings
-![Settings](./src/assets/images/docs/settings.png)
-Configure system settings including store information, notifications, security, and more.
-
 ## Features
 
 ### Dashboard

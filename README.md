@@ -13,6 +13,16 @@ An enterprise-level pharmacy management system that integrates AI-powered medici
 - 🔒 Secure authentication and authorization
 - 📊 Analytics dashboard
 
+## UI Screenshots
+
+### Dashboard
+![Dashboard](./customer/src/assets/images/docs/dashboard.png)
+The dashboard provides a comprehensive overview of the pharmacy's operations with key metrics, recent orders, and stock alerts.
+
+### Products
+![Products](./customer/src/assets/images/docs/products.png)
+Browse and search through our extensive catalog of medicines and healthcare products with detailed information, pricing, and availability status.
+
 ## Tech Stack
 
 ### Backend
