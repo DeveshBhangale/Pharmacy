@@ -1,0 +1,87 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Python dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run Python tests
+      run: |
+        cd backend
+        python -m pytest
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install and test frontend customer
+      run: |
+        cd frontend/customer
+        npm install
+        npm run test
+
+    - name: Install and test frontend admin
+      run: |
+        cd frontend/admin
+        npm install
+        npm run test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build and push Docker images
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        # Build and push backend
+        docker build -t $ECR_REGISTRY/pms-backend:${{ github.sha }} -f infrastructure/docker/backend/Dockerfile .
+        docker push $ECR_REGISTRY/pms-backend:${{ github.sha }}
+
+        # Build and push frontend customer
+        docker build -t $ECR_REGISTRY/pms-frontend-customer:${{ github.sha }} frontend/customer
+        docker push $ECR_REGISTRY/pms-frontend-customer:${{ github.sha }}
+
+        # Build and push frontend admin
+        docker build -t $ECR_REGISTRY/pms-frontend-admin:${{ github.sha }} frontend/admin
+        docker push $ECR_REGISTRY/pms-frontend-admin:${{ github.sha }}
+
+    - name: Deploy to ECS
+      run: |
+        aws ecs update-service --cluster pms-cluster --service pms-backend --force-new-deployment
+        aws ecs update-service --cluster pms-cluster --service pms-frontend-customer --force-new-deployment
+        aws ecs update-service --cluster pms-cluster --service pms-frontend-admin --force-new-deployment 

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+    volumes:
+      - ../../backend:/app
+    networks:
+      - pms-network
+
+  frontend-customer:
+    build:
+      context: ../../frontend/customer
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../frontend/customer:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - pms-network
+
+  frontend-admin:
+    build:
+      context: ../../frontend/admin
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    volumes:
+      - ../../frontend/admin:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - pms-network
+
+networks:
+  pms-network:
+    driver: bridge
