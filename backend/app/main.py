@@ -7,6 +7,9 @@ import uvicorn
 import logging
 from typing import Dict, Any
 
+from app.api.v1 import auth
+from app.core.config import settings
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -27,6 +30,13 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+# Include routers
+app.include_router(
+    auth.router,
+    prefix=f"{settings.API_V1_STR}/auth",
+    tags=["authentication"]
 )
 
 # Error handling
@@ -61,6 +71,14 @@ async def health_check() -> Dict[str, Any]:
 # app.include_router(inventory.router, prefix="/api/v1/inventory", tags=["Inventory"])
 # app.include_router(prescriptions.router, prefix="/api/v1/prescriptions", tags=["Prescriptions"])
 # app.include_router(recommendations.router, prefix="/api/v1/recommendations", tags=["Recommendations"])
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Welcome to Pharmacy Management System API",
+        "docs_url": "/docs",
+        "redoc_url": "/redoc"
+    }
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True) 

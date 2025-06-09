@@ -11,8 +11,8 @@ from app.core.security import (
     get_current_active_user,
 )
 from app.core.config import settings
-from app.core.database import get_db
-from app.models.pharmacy import User
+from app.core.deps import get_db
+from app.models.models import User
 from pydantic import BaseModel, EmailStr
 
 router = APIRouter()
@@ -22,9 +22,9 @@ class Token(BaseModel):
     token_type: str
 
 class UserCreate(BaseModel):
+    name: str
     email: EmailStr
     password: str
-    full_name: str
     role: str = "customer"
 
 class UserResponse(BaseModel):
@@ -77,7 +77,7 @@ async def register(
     user = User(
         email=user_in.email,
         hashed_password=get_password_hash(user_in.password),
-        full_name=user_in.full_name,
+        full_name=user_in.name,
         role=user_in.role,
         is_active=True,
     )

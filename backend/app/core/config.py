@@ -1,50 +1,62 @@
+from typing import Optional, Dict, Any, List
 from pydantic_settings import BaseSettings
-from typing import Optional
-import secrets
-from functools import lru_cache
+from pydantic import AnyHttpUrl, validator
+from pathlib import Path
 
 class Settings(BaseSettings):
-    # API Settings
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "Pharmacy Management System"
+    VERSION: str = "1.0.0"
     
-    # Security
-    SECRET_KEY: str = secrets.token_urlsafe(32)
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
+    # CORS Configuration
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
+
+    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
+        if isinstance(v, str) and not v.startswith("["):
+            return [i.strip() for i in v.split(",")]
+        elif isinstance(v, list):
+            return v
+        raise ValueError(v)
+
+    # Database Configuration
+    POSTGRES_SERVER: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    SQLALCHEMY_DATABASE_URI: Optional[str] = None
+
+    @validator("SQLALCHEMY_DATABASE_URI", pre=True)
+    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
+        if isinstance(v, str):
+            return v
+        return f"postgresql://{values.get('POSTGRES_USER')}:{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_SERVER')}/{values.get('POSTGRES_DB')}"
+
+    # AWS Configuration
+    AWS_REGION: str = "us-west-2"
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
     
-    # AWS Settings
-    AWS_ACCESS_KEY_ID: Optional[str] = None
-    AWS_SECRET_ACCESS_KEY: Optional[str] = None
-    AWS_REGION: str = "us-east-1"
+    # DynamoDB Configuration
+    DYNAMODB_TABLE: str = "pms-medicines"
     
-    # DynamoDB Settings
-    DYNAMODB_TABLE_PREFIX: str = "pms_"
+    # S3 Configuration
+    S3_BUCKET: str = "pms-storage"
     
-    # Redis Settings
+    # Redis Configuration
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
-    REDIS_PASSWORD: Optional[str] = None
     
-    # Database Settings
-    # To override the database URL, create a .env file in the backend directory with:
-    # DATABASE_URL=postgresql://username:password@localhost:5432/pms
-    # or your actual database connection string
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/pms"
+    # Security
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
-    # ML Model Settings
-    MODEL_PATH: str = "app/ml/models"
-    BATCH_SIZE: int = 32
-    
-    # File Upload Settings
-    UPLOAD_DIR: str = "uploads"
-    MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024  # 5MB
+    # ML Model Configuration
+    ML_MODEL_PATH: str = "app/ml/models/recommendation_model.h5"
     
     class Config:
         case_sensitive = True
         env_file = ".env"
 
-@lru_cache()
-def get_settings() -> Settings:
-    return Settings()
-
-settings = get_settings() 
+settings = Settings() 
